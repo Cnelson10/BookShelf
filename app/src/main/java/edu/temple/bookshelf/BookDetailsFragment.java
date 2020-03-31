@@ -22,6 +22,7 @@ public class BookDetailsFragment extends Fragment {
     private static final String AUTHOR_KEY = "_author";
 
     private HashMap<String, String> book;
+    //private Book book;
     Context parent;
 
     TextView title_text;
