@@ -7,7 +7,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 
@@ -18,24 +21,22 @@ import java.util.HashMap;
 public class BookDetailsFragment extends Fragment {
 
     private static final String BOOK_KEY = "_bookId";
-    private static final String TITLE_KEY = "_title";
-    private static final String AUTHOR_KEY = "_author";
 
-    private HashMap<String, String> book;
-    //private Book book;
+    private Book book;
     Context parent;
 
     TextView title_text;
     TextView author_text;
+    ImageView cover_img;
 
     public BookDetailsFragment() {
         // Required empty public constructor
     }
 
-    public static BookDetailsFragment newInstance(HashMap<String, String> book){
+    public static BookDetailsFragment newInstance(Book book){
         BookDetailsFragment fragment = new BookDetailsFragment();
         Bundle args = new Bundle();
-        args.putSerializable(BOOK_KEY, book);
+        args.putParcelable(BOOK_KEY, book);
         fragment.setArguments(args);
         return fragment;
     }
@@ -50,7 +51,7 @@ public class BookDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            book = (HashMap<String,String>) getArguments().getSerializable(BOOK_KEY);
+            book = (Book) getArguments().getSerializable(BOOK_KEY);
         }
     }
 
@@ -61,8 +62,10 @@ public class BookDetailsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_book_details, container, false);
         title_text = rootView.findViewById(R.id.book_details_title);
         author_text = rootView.findViewById(R.id.book_details_author);
-        title_text.setText(book.get(TITLE_KEY));
-        author_text.setText(book.get(AUTHOR_KEY));
+        cover_img = rootView.findViewById(R.id.book_details_cover);
+        title_text.setText(book.getTitle());
+        author_text.setText(book.getAuthor());
+        Picasso.get().load(book.getCoverURL()).into(cover_img);
         return rootView;
     }
 
@@ -75,8 +78,8 @@ public class BookDetailsFragment extends Fragment {
     /**
      * Create a method that will be called by the MainActivity and the parameter wil be data from the BookListFragment
      */
-    public void displayBook(HashMap<String, String> book){
-        title_text.setText(book.get(TITLE_KEY));      //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
-        author_text.setText(book.get(AUTHOR_KEY));    //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
+    public void displayBook(Book book){
+        title_text.setText(book.getTitle());      //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
+        author_text.setText(book.getAuthor());    //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
     }
 }

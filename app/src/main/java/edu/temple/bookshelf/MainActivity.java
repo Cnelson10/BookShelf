@@ -2,9 +2,20 @@ package edu.temple.bookshelf;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,10 +46,15 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private int currentBookIndex = -1;
     private String booksUrl = "https://kamorris.com/lab/abp/booksearch.php?search=";
 
+    RequestQueue requestQueue;
+    EditText searchEditText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(null);
         setContentView(R.layout.activity_main);
+
+        requestQueue = Volley.newRequestQueue(this);
 
 //        books = new ArrayList<>();
 //        String[] titles = getResources().getStringArray(R.array.book_titles);
@@ -49,28 +65,53 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 //            book.put(AUTHOR_KEY, authors[i]);
 //            books.add(book);
 //        }
-
+        searchEditText = findViewById(R.id.searchText);
         // check if Activity has been loaded before
         if(savedInstanceState != null) {    // if so, set book data to previously loaded data
 
             books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
-            allBooks = savedInstanceState.getParcelableArrayList(ALL_BOOKS_KEY);
             currentBookIndex = savedInstanceState.getInt(CURRENT_BOOK_KEY);
 
-        } else {    // otherwise Activity is being loaded for the first time and need to download all of the books
-
-            books = new ArrayList<>();
-            downloadAllBooks();
-            allBooks = new ArrayList<>(books);
-
         }
-//        listFragment = BookListFragment.newInstance(books);
-//        detailsFragment = BookDetailsFragment.newInstance(books.get(0));
 
-//        getSupportFragmentManager()
-//                .beginTransaction()
-//                .add(R.id.list_fragment_container, listFragment, LIST_FRAGMENT_KEY)
-//                .commit();
+        findViewById(R.id.searchButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                String searchUrl = booksUrl + searchEditText.getText().toString();
+                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(searchUrl,
+                        new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray response){
+                                try {
+                                    ArrayList<Book> searchBooks = new ArrayList<>();
+                                    if(response.length() > 0) {
+                                        books.clear();
+                                        for(int i = 0; i < response.length(); i++){
+                                            searchBooks.add(new Book(response.getJSONObject(i)));
+                                        }
+                                        books = new ArrayList<>(searchBooks);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void  onErrorResponse(VolleyError error){
+                                Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        });
+        listFragment = BookListFragment.newInstance(books);
+        detailsFragment = BookDetailsFragment.newInstance(books.get(0));
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.list_fragment_container, listFragment, LIST_FRAGMENT_KEY)
+                .commit();
 
         //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
         //If the BookDetailsFragment is visible (not null) we are in landscape mode or on a larger device
@@ -96,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
      * Method implemented from BookSelectorInterface used for inter-fragment communication
      */
     @Override
-    public void selectBook(HashMap<String, String> book) {
+    public void selectBook(Book book) {
         if(dualPane){
             //Call BookDetailsFragment method displayBook with the data parameter which is the book string title provided by BookListFragment
             detailsFragment.displayBook(book);

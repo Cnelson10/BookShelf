@@ -22,19 +22,18 @@ public class BookListFragment extends Fragment {
 
     private BookSelectorInterface bookSelector;
     private static final String BOOK_LIST_KEY = "_bookList";
-    private static final String TITLE_KEY = "_title";
-    private static final String AUTHOR_KEY = "_author";
+
 
     Context parentContext;
 
-    private ArrayList<HashMap<String, String>> bookList;
-    private SimpleAdapter adapter;
+    private ArrayList<Book> bookList;
+    private BooksAdapter booksAdapter;
 
     public BookListFragment() {
         // Required empty public constructor
     }
 
-    public static BookListFragment newInstance(ArrayList<HashMap<String, String>> books){
+    public static BookListFragment newInstance(ArrayList<Book> books){
         BookListFragment fragment = new BookListFragment();
         Bundle args = new Bundle();
         args.putSerializable(BOOK_LIST_KEY, books);
@@ -56,7 +55,7 @@ public class BookListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(getArguments() != null){
-            bookList = (ArrayList<HashMap<String, String>>) getArguments().getSerializable(BOOK_LIST_KEY);
+            bookList = (ArrayList<Book>) getArguments().getSerializable(BOOK_LIST_KEY);
         }
     }
 
@@ -66,13 +65,11 @@ public class BookListFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_book_list, container, false);
         final ListView bookListView = rootView.findViewById(R.id.listView);
-        String[] from = new String[] {TITLE_KEY, AUTHOR_KEY};
-        int[] to = new int[] { R.id.book_list_title, R.id.book_list_author };
-        adapter = new SimpleAdapter(this.getActivity(), bookList, R.layout.book_item, from, to);
-        bookListView.setAdapter(adapter);
+        booksAdapter = new BooksAdapter(this.getActivity(), bookList);
+        bookListView.setAdapter(booksAdapter);
         bookListView.setOnItemClickListener(new ListView.OnItemClickListener(){
             public void onItemClick(AdapterView<?> parent, View view, int position, long id){
-                ((BookSelectorInterface) parentContext).selectBook(((HashMap)parent.getItemAtPosition(position)));
+                ((BookSelectorInterface) parentContext).selectBook(((Book)parent.getItemAtPosition(position)));
             }
         });
         return rootView;
@@ -96,6 +93,6 @@ public class BookListFragment extends Fragment {
     }
 
     public interface BookSelectorInterface {
-        void selectBook(HashMap<String, String> book);
+        void selectBook(Book book);
     }
 }

@@ -23,4 +23,9 @@
         android:layout_gravity="center"
         android:textSize="18sp" />
 
+    <ImageView
+        android:id="@+id/book_details_cover"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>

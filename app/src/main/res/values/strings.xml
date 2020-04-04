@@ -1,31 +1,3 @@
 <resources>
     <string name="app_name">BookShelf</string>
-    <string-array name="book_titles">
-        <item>The Great Gatsby</item>
-        <item>Moby Dick</item>
-        <item>Hamlet</item>
-        <item>War and Peace</item>
-        <item>The Odyssey</item>
-        <item>Crime and Punishment</item>
-        <item>Wuthering Heights</item>
-        <item>Pride and Prejudice</item>
-        <item>The Cather in the Rye</item>
-        <item>Catch-22</item>
-        <item>The Grapes of Wrath</item>
-        <item>To Kill a Mockingbird</item>
-    </string-array>
-    <string-array name="book_authors">
-        <item>F. Scott Fitzgerald</item>
-        <item>Herman Melville</item>
-        <item>William Shakespeare</item>
-        <item>Leo Tolstoy</item>
-        <item>Homer</item>
-        <item>Fyodor Dostoyevsky</item>
-        <item>Emily Bronte</item>
-        <item>Jane Austen</item>
-        <item>J. D. Salinger</item>
-        <item>Joseph Heller</item>
-        <item>John Steinbeck</item>
-        <item>Harper Lee</item>
-    </string-array>
 </resources>
