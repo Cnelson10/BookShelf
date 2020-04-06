@@ -51,7 +51,7 @@ public class BookDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            book = (Book) getArguments().getSerializable(BOOK_KEY);
+            book = getArguments().getParcelable(BOOK_KEY);
         }
     }
 
@@ -63,9 +63,9 @@ public class BookDetailsFragment extends Fragment {
         title_text = rootView.findViewById(R.id.book_details_title);
         author_text = rootView.findViewById(R.id.book_details_author);
         cover_img = rootView.findViewById(R.id.book_details_cover);
-        title_text.setText(book.getTitle());
-        author_text.setText(book.getAuthor());
-        Picasso.get().load(book.getCoverURL()).into(cover_img);
+        if(book != null) {
+            displayBook(book);
+        }
         return rootView;
     }
 
@@ -81,5 +81,6 @@ public class BookDetailsFragment extends Fragment {
     public void displayBook(Book book){
         title_text.setText(book.getTitle());      //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
         author_text.setText(book.getAuthor());    //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
+        Picasso.get().load(book.getCoverURL()).into(cover_img);
     }
 }

@@ -36,7 +36,7 @@ public class BookListFragment extends Fragment {
     public static BookListFragment newInstance(ArrayList<Book> books){
         BookListFragment fragment = new BookListFragment();
         Bundle args = new Bundle();
-        args.putSerializable(BOOK_LIST_KEY, books);
+        args.putParcelableArrayList(BOOK_LIST_KEY, books);
         fragment.setArguments(args);
         return fragment;
     }
