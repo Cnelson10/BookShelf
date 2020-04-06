@@ -20,7 +20,7 @@ import java.util.HashMap;
  */
 public class BookDetailsFragment extends Fragment {
 
-    private static final String BOOK_KEY = "_bookId";
+    private static final String CURRENT_BOOK_KEY = "_currentBook";
 
     private Book book;
     Context parent;
@@ -36,7 +36,7 @@ public class BookDetailsFragment extends Fragment {
     public static BookDetailsFragment newInstance(Book book){
         BookDetailsFragment fragment = new BookDetailsFragment();
         Bundle args = new Bundle();
-        args.putParcelable(BOOK_KEY, book);
+        args.putParcelable(CURRENT_BOOK_KEY, book);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,7 +51,7 @@ public class BookDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            book = getArguments().getParcelable(BOOK_KEY);
+            book = getArguments().getParcelable(CURRENT_BOOK_KEY);
         }
     }
 
@@ -82,5 +82,12 @@ public class BookDetailsFragment extends Fragment {
         title_text.setText(book.getTitle());      //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
         author_text.setText(book.getAuthor());    //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
         Picasso.get().load(book.getCoverURL()).into(cover_img);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelable(CURRENT_BOOK_KEY, book);
     }
 }

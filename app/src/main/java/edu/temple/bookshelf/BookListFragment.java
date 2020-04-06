@@ -21,7 +21,7 @@ import java.util.HashMap;
 public class BookListFragment extends Fragment {
 
     private BookSelectorInterface bookSelector;
-    private static final String BOOK_LIST_KEY = "_bookList";
+    private static final String BOOKS_KEY = "_books";
 
 
     Context parentContext;
@@ -36,7 +36,7 @@ public class BookListFragment extends Fragment {
     public static BookListFragment newInstance(ArrayList<Book> books){
         BookListFragment fragment = new BookListFragment();
         Bundle args = new Bundle();
-        args.putParcelableArrayList(BOOK_LIST_KEY, books);
+        args.putParcelableArrayList(BOOKS_KEY, books);
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,7 +55,7 @@ public class BookListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(getArguments() != null){
-            bookList = (ArrayList<Book>) getArguments().getSerializable(BOOK_LIST_KEY);
+            bookList = (ArrayList<Book>) getArguments().getSerializable(BOOKS_KEY);
         }
     }
 
@@ -94,5 +94,12 @@ public class BookListFragment extends Fragment {
 
     public interface BookSelectorInterface {
         void selectBook(Book book);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList(BOOKS_KEY , bookList);
     }
 }

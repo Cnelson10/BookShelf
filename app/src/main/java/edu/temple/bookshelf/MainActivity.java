@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     private BookDetailsFragment detailsFragment;
 
-    private int currentBookIndex = -1;
+    private Book currentBook;
     private String booksUrl = "https://kamorris.com/lab/abp/booksearch.php?search=";
 
     RequestQueue requestQueue;
@@ -54,7 +54,28 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         if(savedInstanceState != null) {    // if so, set book data to previously loaded data
 
             books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
-            currentBookIndex = savedInstanceState.getInt(CURRENT_BOOK_KEY);
+            currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
+
+            detailsFragment = BookDetailsFragment.newInstance(currentBook);
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.list_fragment_container, BookListFragment.newInstance(books))
+                    .commit();
+
+            //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
+            //If the BookDetailsFragment is visible (not null) we are in landscape mode or on a larger device
+            dualPane = (findViewById(R.id.details_fragment_container) != null);
+
+            //FragmentManager fragmentManager = getSupportFragmentManager();
+            //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            //Check if our boolean is true (landscape or portrait) or false (small screen portrait)
+            if(dualPane){   //If it is true, load book list and details fragments
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.details_fragment_container, detailsFragment)
+                        .commit();
+            }
 
         }
 
@@ -77,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                                         }
                                         books = new ArrayList<>(searchBooks);
 
-                                        detailsFragment = BookDetailsFragment.newInstance(books.get(0));
+                                        detailsFragment = new BookDetailsFragment();
 
                                         getSupportFragmentManager()
                                                 .beginTransaction()
@@ -121,15 +142,36 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         super.onDestroy();
     }
 
-    /**
-     * Method implemented from BookSelectorInterface used for inter-fragment communication
-     */
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList(BOOKS_KEY, books);
+        outState.putParcelable(CURRENT_BOOK_KEY, currentBook);
+    }
+
+    //onRestoreInstanceState
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
+        currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
+
+    }
+
+        /**
+         * Method implemented from BookSelectorInterface used for inter-fragment communication
+         */
     @Override
     public void selectBook(Book book) {
         if(dualPane){
             //Call BookDetailsFragment method displayBook with the data parameter which is the book string title provided by BookListFragment
+            currentBook = book;
             detailsFragment.displayBook(book);
         } else {
+            currentBook = book;
             BookDetailsFragment portraitDetailsFragment = BookDetailsFragment.newInstance(book);
             getSupportFragmentManager()
                     .beginTransaction()
