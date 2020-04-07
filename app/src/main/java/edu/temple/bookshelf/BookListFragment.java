@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,8 +66,10 @@ public class BookListFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_book_list, container, false);
         final ListView bookListView = rootView.findViewById(R.id.listView);
-        booksAdapter = new BooksAdapter(this.getActivity(), bookList);
-        bookListView.setAdapter(booksAdapter);
+        if(bookList != null){
+            booksAdapter = new BooksAdapter(this.getActivity(), bookList);
+            bookListView.setAdapter(booksAdapter);
+        }
         bookListView.setOnItemClickListener(new ListView.OnItemClickListener(){
             public void onItemClick(AdapterView<?> parent, View view, int position, long id){
                 ((BookSelectorInterface) parentContext).selectBook(((Book)parent.getItemAtPosition(position)));
@@ -101,5 +104,18 @@ public class BookListFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putParcelableArrayList(BOOKS_KEY , bookList);
+    }
+
+    public void updateBookList(ArrayList<Book> newBookList) {
+
+        Log.d("TESTESTEST", "updateBookList: updating booklist");
+        if(bookList != null){
+            booksAdapter.clearAll();
+        }
+
+        if(booksAdapter != null){
+            this.bookList = newBookList;
+            booksAdapter.updateBookList(newBookList);
+        }
     }
 }

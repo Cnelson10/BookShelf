@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private static final String BOOKS_KEY = "_books";
     private static final String CURRENT_BOOK_KEY = "_currentBook";
 
+    private BookListFragment listFragment;
     private BookDetailsFragment detailsFragment;
 
     private Book currentBook;
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     RequestQueue requestQueue;
     EditText searchEditText;
+
+    private String configTag;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -56,11 +59,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
             currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
 
+            listFragment = BookListFragment.newInstance(books);
             detailsFragment = BookDetailsFragment.newInstance(currentBook);
 
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.list_fragment_container, BookListFragment.newInstance(books))
+                    .replace(R.id.list_fragment_container, listFragment)
                     .commit();
 
             //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
@@ -75,64 +79,54 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         .beginTransaction()
                         .replace(R.id.details_fragment_container, detailsFragment)
                         .commit();
+            } else {
+                if(currentBook != null){
+                    BookDetailsFragment portraitDetailsFragment = BookDetailsFragment.newInstance(currentBook);
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.list_fragment_container, portraitDetailsFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
             }
 
+//        } else {
+//            listFragment = new BookListFragment();
+//            detailsFragment = new BookDetailsFragment();
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.list_fragment_container, listFragment)
+//                    .commit();
+//
+//            //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
+//            //If the BookDetailsFragment is visible (not null) we are in landscape mode or on a larger device
+//            dualPane = (findViewById(R.id.details_fragment_container) != null);
+//
+//            //FragmentManager fragmentManager = getSupportFragmentManager();
+//            //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//            //Check if our boolean is true (landscape or portrait) or false (small screen portrait)
+//            if(dualPane){   //If it is true, load book list and details fragments
+//                getSupportFragmentManager()
+//                        .beginTransaction()
+//                        .replace(R.id.details_fragment_container, detailsFragment)
+//                        .commit();
+//            }
         }
 
         findViewById(R.id.searchButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
+                Log.d("TESTTESTTEST", "onClick: search clicked");
                 String searchUrl = booksUrl + searchEditText.getText().toString();
-                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(searchUrl,
-                        new Response.Listener<JSONArray>() {
-                            @Override
-                            public void onResponse(JSONArray response){
-                                try {
-                                    ArrayList<Book> searchBooks = new ArrayList<>();
-                                    if(response.length() > 0) {
-                                        if(books != null){
-                                            books.clear();
-                                        }
-                                        for(int i = 0; i < response.length(); i++){
-                                            searchBooks.add(new Book(response.getJSONObject(i)));
-                                        }
-                                        books = new ArrayList<>(searchBooks);
-
-                                        detailsFragment = new BookDetailsFragment();
-
-                                        getSupportFragmentManager()
-                                                .beginTransaction()
-                                                .replace(R.id.list_fragment_container, BookListFragment.newInstance(books))
-                                                .commit();
-
-                                        //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
-                                        //If the BookDetailsFragment is visible (not null) we are in landscape mode or on a larger device
-                                        dualPane = (findViewById(R.id.details_fragment_container) != null);
-
-                                        //FragmentManager fragmentManager = getSupportFragmentManager();
-                                        //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                                        //Check if our boolean is true (landscape or portrait) or false (small screen portrait)
-                                        if(dualPane){   //If it is true, load book list and details fragments
-                                            getSupportFragmentManager()
-                                                    .beginTransaction()
-                                                    .replace(R.id.details_fragment_container, detailsFragment)
-                                                    .commit();
-                                        }
-
-                                    }
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void  onErrorResponse(VolleyError error){
-                                Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                requestQueue.add(jsonArrayRequest);
+                searchBooks(searchUrl);
+                Log.d("TESTTESTTEST", "onClick: display frag disaplyed?" +  (detailsFragment != null));
+//                configTag = (String) findViewById(R.id.main_activity_view).getTag();
+//                if (configTag.equals(getString(R.string.portrait_tag)) && (findViewById(R.id.details_fragment_container) != null)){
+//                    getSupportFragmentManager()
+//                            .beginTransaction()
+//                            .replace(R.id.details_fragment_container, listFragment)
+//                            .commit();
+//                }
             }
         });
     }
@@ -150,8 +144,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         outState.putParcelable(CURRENT_BOOK_KEY, currentBook);
     }
 
-    //onRestoreInstanceState
-
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
@@ -159,6 +151,49 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
         currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
 
+    }
+
+    public void searchBooks(String searchURL){
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(searchURL,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response){
+                        try {
+                            Log.d("TESTTESTTEST", "onResponse: getting books");
+                            ArrayList<Book> searchBooks = new ArrayList<>();
+                            if(response.length() > 0) {
+                                if(books != null){
+                                    books.clear();
+                                }
+                                for(int i = 0; i < response.length(); i++){
+                                    searchBooks.add(new Book(response.getJSONObject(i)));
+                                }
+                                books = new ArrayList<>(searchBooks);
+                                Log.d("TESTTESTTEST", "onResponse: got books:" + books);
+                            }
+
+                            if(listFragment != null){
+                                listFragment.updateBookList(books);
+                            } else {
+                                listFragment = BookListFragment.newInstance(books);
+                                getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.list_fragment_container, listFragment)
+                                        .commit();
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void  onErrorResponse(VolleyError error){
+                        Toast.makeText(MainActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        requestQueue.add(jsonArrayRequest);
     }
 
         /**

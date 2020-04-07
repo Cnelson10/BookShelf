@@ -4,6 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:id="@+id/main_activity_view"
+    android:tag="@string/portrait_tag"
     tools:context=".MainActivity">
 
     <RelativeLayout android:layout_width="match_parent"

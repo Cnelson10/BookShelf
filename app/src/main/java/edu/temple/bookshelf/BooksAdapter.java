@@ -1,6 +1,7 @@
 package edu.temple.bookshelf;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,5 +55,19 @@ public class BooksAdapter extends BaseAdapter {
         authorTextView.setText(((Book) getItem(position)).getAuthor());
 
         return convertView;
+    }
+
+    public void clearAll() {
+        if(books != null){
+            Log.d("TESTESTEST", "updateBookList: clearing previous booklist");
+            books.clear();
+            notifyDataSetChanged();
+        }
+    }
+
+    public void updateBookList(ArrayList<Book> books){
+        Log.d("TESTESTEST", "updateBookList: adding new booklist to existing adapter");
+        this.books = books;
+        notifyDataSetChanged();
     }
 }
