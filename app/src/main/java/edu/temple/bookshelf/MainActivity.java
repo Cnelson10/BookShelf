@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         // check if Activity has been loaded before
         if(savedInstanceState != null) {    // if so, set book data to previously loaded data
 
+            Log.d("TESTTESTTEST", "onCreate: savedInstSt");
             books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
             currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
 
@@ -119,12 +120,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 Log.d("TESTTESTTEST", "onClick: search clicked");
                 String searchUrl = booksUrl + searchEditText.getText().toString();
                 searchBooks(searchUrl);
-                Log.d("TESTTESTTEST", "onClick: display frag disaplyed?" +  (detailsFragment != null));
-//                configTag = (String) findViewById(R.id.main_activity_view).getTag();
-//                if (configTag.equals(getString(R.string.portrait_tag)) && (findViewById(R.id.details_fragment_container) != null)){
+                currentBook = null;
+                Log.d("TESTTESTTEST", "onClick: number of fragments on backstack" +  getSupportFragmentManager().getBackStackEntryCount());
+                configTag = (String) findViewById(R.id.main_activity_view).getTag();
+                if (configTag.equals(getString(R.string.portrait_tag)) && (getSupportFragmentManager().getBackStackEntryCount() > 0)){
+                    getSupportFragmentManager().popBackStack();
+                }
+                if (configTag.equals(getString(R.string.landscape_tag)) || configTag.equals(getString(R.string.tablet_tag))){
+                    detailsFragment = BookDetailsFragment.newInstance(currentBook);
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.details_fragment_container, detailsFragment)
+                            .commit();
+                }
+//                if(detailsFragment != null){
+//                    detailsFragment = new BookDetailsFragment();
 //                    getSupportFragmentManager()
 //                            .beginTransaction()
-//                            .replace(R.id.details_fragment_container, listFragment)
+//                            .replace(R.id.details_fragment_container, detailsFragment)
 //                            .commit();
 //                }
             }
@@ -159,7 +172,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     @Override
                     public void onResponse(JSONArray response){
                         try {
-                            Log.d("TESTTESTTEST", "onResponse: getting books");
                             ArrayList<Book> searchBooks = new ArrayList<>();
                             if(response.length() > 0) {
                                 if(books != null){
@@ -168,13 +180,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                                 for(int i = 0; i < response.length(); i++){
                                     searchBooks.add(new Book(response.getJSONObject(i)));
                                 }
-                                books = new ArrayList<>(searchBooks);
-                                Log.d("TESTTESTTEST", "onResponse: got books:" + books);
                             }
-
-                            if(listFragment != null){
+                            if(books != null){
+                                books = new ArrayList<>(searchBooks);
                                 listFragment.updateBookList(books);
                             } else {
+                                books = new ArrayList<>(searchBooks);
                                 listFragment = BookListFragment.newInstance(books);
                                 getSupportFragmentManager()
                                         .beginTransaction()
