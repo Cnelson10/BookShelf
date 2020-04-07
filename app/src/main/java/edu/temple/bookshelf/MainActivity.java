@@ -29,7 +29,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity implements BookListFragment.BookSelectorInterface {
 
     boolean dualPane;   //Boolean used to say if there are two fragments on the screen or not
-    private ArrayList<Book> books;        //currently displayed books
+    private ArrayList<Book> books;  //current list of books returned from search
 
     private static final String BOOKS_KEY = "_books";
     private static final String CURRENT_BOOK_KEY = "_currentBook";
@@ -37,13 +37,13 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private BookListFragment listFragment;
     private BookDetailsFragment detailsFragment;
 
-    private Book currentBook;
+    private Book currentBook;       //current selected book for display frag
     private String booksUrl = "https://kamorris.com/lab/abp/booksearch.php?search=";
 
     RequestQueue requestQueue;
     EditText searchEditText;
 
-    private String configTag;
+    private String configTag;       //tag used to check which screen configuration is currently being used
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -56,32 +56,31 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         // check if Activity has been loaded before
         if(savedInstanceState != null) {    // if so, set book data to previously loaded data
 
-            Log.d("TESTTESTTEST", "onCreate: savedInstSt");
+            //Log.d("TESTTESTTEST", "onCreate: savedInstSt");
             books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
             currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
 
             listFragment = BookListFragment.newInstance(books);
             detailsFragment = BookDetailsFragment.newInstance(currentBook);
 
+            //load book list frag no matter if we are in portrait or landscape/tablet
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.list_fragment_container, listFragment)
                     .commit();
 
-            //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
             //If the BookDetailsFragment is visible (not null) we are in landscape mode or on a larger device
             dualPane = (findViewById(R.id.details_fragment_container) != null);
 
-            //FragmentManager fragmentManager = getSupportFragmentManager();
-            //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            //Check if our boolean is true (landscape or portrait) or false (small screen portrait)
-            if(dualPane){   //If it is true, load book list and details fragments
+            //Check if our dualPane is true (landscape or portrait) or false (small screen portrait)
+            if(dualPane){   //If it is true, load book details fragments
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.details_fragment_container, detailsFragment)
                         .commit();
-            } else {
-                if(currentBook != null){
+            } else {        //False, therefore we are in portrait mode
+                if(currentBook != null){    // check if a book from the list is currently selected
+                    // if a book is selected add the display fragment of that book to the back stack
                     BookDetailsFragment portraitDetailsFragment = BookDetailsFragment.newInstance(currentBook);
                     getSupportFragmentManager()
                             .beginTransaction()
@@ -90,56 +89,30 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             .commit();
                 }
             }
-
-//        } else {
-//            listFragment = new BookListFragment();
-//            detailsFragment = new BookDetailsFragment();
-//            getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .replace(R.id.list_fragment_container, listFragment)
-//                    .commit();
-//
-//            //Determine if one or two fragments are visible (one if portrait mode on a smaller phone, two if in landscape mode or on a larger device)
-//            //If the BookDetailsFragment is visible (not null) we are in landscape mode or on a larger device
-//            dualPane = (findViewById(R.id.details_fragment_container) != null);
-//
-//            //FragmentManager fragmentManager = getSupportFragmentManager();
-//            //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//            //Check if our boolean is true (landscape or portrait) or false (small screen portrait)
-//            if(dualPane){   //If it is true, load book list and details fragments
-//                getSupportFragmentManager()
-//                        .beginTransaction()
-//                        .replace(R.id.details_fragment_container, detailsFragment)
-//                        .commit();
-//            }
         }
 
         findViewById(R.id.searchButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                Log.d("TESTTESTTEST", "onClick: search clicked");
-                String searchUrl = booksUrl + searchEditText.getText().toString();
-                searchBooks(searchUrl);
-                currentBook = null;
-                Log.d("TESTTESTTEST", "onClick: number of fragments on backstack" +  getSupportFragmentManager().getBackStackEntryCount());
-                configTag = (String) findViewById(R.id.main_activity_view).getTag();
+                //Log.d("TESTTESTTEST", "onClick: search clicked");
+                String searchUrl = booksUrl + searchEditText.getText().toString();      //search url + text grabbed from search bar
+                searchBooks(searchUrl);     //call searchBook function and pass it the search url
+                currentBook = null;         //after a search is completed clear the selected book used by display frag
+                //Log.d("TESTTESTTEST", "onClick: number of fragments on backstack" +  getSupportFragmentManager().getBackStackEntryCount());
+                configTag = (String) findViewById(R.id.main_activity_view).getTag();    //get the config of our current screen
+                // check if the screen is in portrait mode and if the display frag is currently displayed after a new search
                 if (configTag.equals(getString(R.string.portrait_tag)) && (getSupportFragmentManager().getBackStackEntryCount() > 0)){
-                    getSupportFragmentManager().popBackStack();
+                    getSupportFragmentManager().popBackStack();     //since we are in portrait and display frag is displayed pop it from the back stack
                 }
+                // now check if we are in a landscape or tablet configuration
                 if (configTag.equals(getString(R.string.landscape_tag)) || configTag.equals(getString(R.string.tablet_tag))){
+                    // if so, replace the display frag with the previously selected book with an empty display frag
                     detailsFragment = BookDetailsFragment.newInstance(currentBook);
                     getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.details_fragment_container, detailsFragment)
                             .commit();
                 }
-//                if(detailsFragment != null){
-//                    detailsFragment = new BookDetailsFragment();
-//                    getSupportFragmentManager()
-//                            .beginTransaction()
-//                            .replace(R.id.details_fragment_container, detailsFragment)
-//                            .commit();
-//                }
             }
         });
     }
@@ -174,17 +147,17 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         try {
                             ArrayList<Book> searchBooks = new ArrayList<>();
                             if(response.length() > 0) {
-                                if(books != null){
-                                    books.clear();
+                                if(books != null) {     // if there are currently books in the arrayList
+                                    books.clear();      // clear the list
                                 }
-                                for(int i = 0; i < response.length(); i++){
-                                    searchBooks.add(new Book(response.getJSONObject(i)));
+                                for(int i = 0; i < response.length(); i++){ // iterate through the returned json array
+                                    searchBooks.add(new Book(response.getJSONObject(i))); // and create a Book object from each jsonObject then add it to an arrayList
                                 }
                             }
-                            if(books != null){
+                            if(books != null) { // if there are books in the list
                                 books = new ArrayList<>(searchBooks);
-                                listFragment.updateBookList(books);
-                            } else {
+                                listFragment.updateBookList(books); // update the adapter with the new books returned by the search
+                            } else {            // otherwise the list fragment hadn't been create yet so create one
                                 books = new ArrayList<>(searchBooks);
                                 listFragment = BookListFragment.newInstance(books);
                                 getSupportFragmentManager()

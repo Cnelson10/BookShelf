@@ -108,14 +108,14 @@ public class BookListFragment extends Fragment {
 
     public void updateBookList(ArrayList<Book> newBookList) {
 
-        Log.d("TESTESTEST", "updateBookList: updating booklist");
-        if(bookList != null){
-            booksAdapter.clearAll();
+        //Log.d("TESTESTEST", "updateBookList: updating booklist");
+        if(bookList != null){           // when updating the adapter with new book items check if the previous book list was null
+            booksAdapter.clearAll();    // if so, clear it out
         }
 
-        if(booksAdapter != null){
+        if(booksAdapter != null){       // check that the book list has been loaded before
             this.bookList = newBookList;
-            booksAdapter.updateBookList(newBookList);
+            booksAdapter.updateBookList(newBookList);   // update the book items in the adapter
         }
     }
 }

@@ -59,15 +59,15 @@ public class BooksAdapter extends BaseAdapter {
 
     public void clearAll() {
         if(books != null){
-            Log.d("TESTESTEST", "updateBookList: clearing previous booklist");
+            //Log.d("TESTESTEST", "updateBookList: clearing previous booklist");
             books.clear();
-            notifyDataSetChanged();
+            notifyDataSetChanged(); // after clearing out the books notify that the adapter has been updated
         }
     }
 
     public void updateBookList(ArrayList<Book> books){
-        Log.d("TESTESTEST", "updateBookList: adding new booklist to existing adapter");
+        //Log.d("TESTESTEST", "updateBookList: adding new booklist to existing adapter");
         this.books = books;
-        notifyDataSetChanged();
+        notifyDataSetChanged(); // after adding new book items to the adapter notify that the data set has been updated
     }
 }
