@@ -26,22 +26,28 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements BookListFragment.BookSelectorInterface {
+public class MainActivity extends AppCompatActivity implements BookListFragment.BookSelectorInterface, BookDetailsFragment.PlayStatusInterface {
 
     boolean dualPane;   //Boolean used to say if there are two fragments on the screen or not
     private ArrayList<Book> books;  //current list of books returned from search
 
     private static final String BOOKS_KEY = "_books";
     private static final String CURRENT_BOOK_KEY = "_currentBook";
+    private static final String PLAY_KEY = "_playing";
+    private static final String PAUSE_KEY = "_paused";
 
     private BookListFragment listFragment;
     private BookDetailsFragment detailsFragment;
+    private BookDetailsFragment portraitDetailsFragment;
 
     private Book currentBook;       //current selected book for display frag
     private String booksUrl = "https://kamorris.com/lab/abp/booksearch.php?search=";
 
     RequestQueue requestQueue;
     EditText searchEditText;
+
+    private boolean playing;
+    private boolean paused;
 
     private String configTag;       //tag used to check which screen configuration is currently being used
 
@@ -59,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             //Log.d("TESTTESTTEST", "onCreate: savedInstSt");
             books = savedInstanceState.getParcelableArrayList(BOOKS_KEY);
             currentBook = savedInstanceState.getParcelable(CURRENT_BOOK_KEY);
+
+            playing = savedInstanceState.getBoolean(PLAY_KEY);
+            paused = savedInstanceState.getBoolean(PAUSE_KEY);
 
             listFragment = BookListFragment.newInstance(books);
             detailsFragment = BookDetailsFragment.newInstance(currentBook);
@@ -81,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             } else {        //False, therefore we are in portrait mode
                 if(currentBook != null){    // check if a book from the list is currently selected
                     // if a book is selected add the display fragment of that book to the back stack
-                    BookDetailsFragment portraitDetailsFragment = BookDetailsFragment.newInstance(currentBook);
+                    portraitDetailsFragment = BookDetailsFragment.newInstance(currentBook);
                     getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.list_fragment_container, portraitDetailsFragment)
@@ -89,6 +98,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             .commit();
                 }
             }
+        } else {
+            playing = false;
+            paused = false;
         }
 
         findViewById(R.id.searchButton).setOnClickListener(new View.OnClickListener() {
@@ -128,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
         outState.putParcelableArrayList(BOOKS_KEY, books);
         outState.putParcelable(CURRENT_BOOK_KEY, currentBook);
+        outState.putBoolean(PLAY_KEY, playing);
+        outState.putBoolean(PAUSE_KEY, paused);
     }
 
     @Override
@@ -191,12 +205,63 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             detailsFragment.displayBook(book);
         } else {
             currentBook = book;
-            BookDetailsFragment portraitDetailsFragment = BookDetailsFragment.newInstance(book);
+            portraitDetailsFragment = BookDetailsFragment.newInstance(book);
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.list_fragment_container, portraitDetailsFragment)
                     .addToBackStack(null)
                     .commit();
         }
+    }
+
+    @Override
+    public void play() {
+        playing = true;
+        if(dualPane) {
+            detailsFragment.displayButtons();
+        } else {
+            portraitDetailsFragment.displayButtons();
+        }
+    }
+
+    @Override
+    public void pause() {
+        paused = true;
+        if(dualPane) {
+            detailsFragment.displayButtons();
+        } else {
+            portraitDetailsFragment.displayButtons();
+        }
+    }
+
+    @Override
+    public void stop() {
+        playing = false;
+        paused = false;
+        if(dualPane) {
+            detailsFragment.displayButtons();
+        } else {
+            portraitDetailsFragment.displayButtons();
+        }
+    }
+
+    @Override
+    public void resume() {
+        paused = false;
+        if(dualPane) {
+            detailsFragment.displayButtons();
+        } else {
+            portraitDetailsFragment.displayButtons();
+        }
+    }
+
+    @Override
+    public boolean getPlayStatus() {
+        return this.playing;
+    }
+
+    @Override
+    public boolean getPauseStatus() {
+        return this.paused;
     }
 }

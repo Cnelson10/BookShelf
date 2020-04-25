@@ -10,6 +10,12 @@
     android:orientation="vertical"
     tools:context=".BookDetailsFragment">
 
+    <SeekBar
+        android:id="@+id/seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp" />
+
     <TextView
         android:id="@+id/book_details_title"
         android:layout_width="wrap_content"
@@ -42,20 +48,24 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:src="@drawable/pause"
-            android:background="@color/colorBlack"/>
+            android:visibility="gone"
+            android:scaleType="fitXY"
+            android:background="@color/colorBlack" />
 
         <Button
             android:id="@+id/play_button"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_margin="10dp"
-            android:background="@drawable/play" />
+            android:visibility="visible"
+            android:background="@drawable/play"/>
 
         <Button
             android:id="@+id/stop_button"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:background="@drawable/stop" />
+            android:visibility="gone"
+            android:background="@drawable/stop"/>
     </LinearLayout>
 
 </LinearLayout>
