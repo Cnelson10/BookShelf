@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -34,6 +35,7 @@ public class BookDetailsFragment extends Fragment {
     private boolean playing;
     private boolean paused;
 
+    SeekBar seekBar;
     ImageButton pauseButton;
     Button playButton;
     Button stopButton;
@@ -87,14 +89,27 @@ public class BookDetailsFragment extends Fragment {
         pauseButton = rootView.findViewById(R.id.pause_button);
         playButton = rootView.findViewById(R.id.play_button);
         stopButton = rootView.findViewById(R.id.stop_button);
+        seekBar = rootView.findViewById(R.id.seek_bar);
 
         this.setButtonListeners();
+        setSeekBarListeners();
 
         if(book != null) {
             displayBook(book);
         }
-        displayButtons();
+        updateButtons();
+        if (savedInstanceState == null){
+            disableSeek();
+            updateSeek();
+        }
         return rootView;
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState){
+        super.onViewStateRestored(savedInstanceState);
+        disableSeek();
+        updateSeek();
     }
 
     @Override
@@ -110,29 +125,31 @@ public class BookDetailsFragment extends Fragment {
         title_text.setText(book.getTitle());      //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
         author_text.setText(book.getAuthor());    //Change the text in BookDetailsFragment to the item clicked in the BookListFragment ListView
         Picasso.get().load(book.getCoverURL()).into(cover_img);
+        this.updateSeek();
     }
 
-    public void displayButtons(){
+    public void updateButtons(){
         if(parent.getPlayStatus()){
-            this.playing = true;
+            playing = true;
             playButton.setVisibility(View.GONE);
             pauseButton.setVisibility(View.VISIBLE);
             stopButton.setVisibility(View.VISIBLE);
         } else {
-            this.playing = false;
+            playing = false;
             playButton.setVisibility(View.VISIBLE);
             pauseButton.setVisibility(View.GONE);
             stopButton.setVisibility(View.GONE);
         }
         if(parent.getPauseStatus()) {
-            this.paused = true;
+            paused = true;
             pauseButton.setImageResource(R.drawable.unpause);
             pauseButton.setBackgroundColor(ContextCompat.getColor(parentContext, R.color.colorWhite));
         } else {
-            this.paused = false;
+            paused = false;
             pauseButton.setImageResource(R.drawable.pause);
             pauseButton.setBackgroundColor(ContextCompat.getColor(parentContext, R.color.colorBlack));
         }
+        updateSeek();
     }
 
     private void setButtonListeners(){
@@ -149,7 +166,7 @@ public class BookDetailsFragment extends Fragment {
                 if(!paused){
                     parent.pause();
                 } else {
-                    parent.resume();
+                    parent.unpause();
                 }
             }
         });
@@ -160,6 +177,55 @@ public class BookDetailsFragment extends Fragment {
                 parent.stop();
             }
         });
+    }
+
+    public void updateSeek(){
+        if(book.getId() >= 1){
+            seekBar.setVisibility(View.VISIBLE);
+            seekBar.setMax(book.getDuration());
+            seekBar.setProgress(parent.getProgress(book.getId()));
+        } else {
+            seekBar.setVisibility(View.GONE);
+        }
+        if(parent.getNowPlayingId() == this.book.getId()){
+            if(!seekBar.isEnabled()){
+                enableSeek();
+            } //else {
+//                seekBar.setProgress(parent.getProgress(book.getId()));
+//            }
+        } else {
+            if(seekBar.isEnabled()){
+                disableSeek();
+            }
+        }
+    }
+
+    private void setSeekBarListeners(){
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                parent.seekProgress(seekBar.getProgress());
+            }
+        });
+    }
+
+    private void enableSeek(){
+        seekBar.setEnabled(true);
+    }
+
+    private void disableSeek()
+    {
+        seekBar.setEnabled(false);
     }
 
     @Override
@@ -175,9 +241,12 @@ public class BookDetailsFragment extends Fragment {
         void play();
         void pause();
         void stop();
-        void resume();
+        void unpause();
         boolean getPlayStatus();
         boolean getPauseStatus();
-
+        int getProgress(int id);
+        void seekProgress(int progress);
+        int getNowPlayingId();
+        Book getNowPlaying();
     }
 }

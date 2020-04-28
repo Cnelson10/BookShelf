@@ -14,7 +14,8 @@
         android:id="@+id/seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="5dp" />
+        android:paddingBottom="5dp"
+        android:enabled="false"/>
 
     <TextView
         android:id="@+id/book_details_title"
